@@ -1,38 +1,43 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package aplikasipenjualan;
 
-/**
- *
- * @author noroi
- */
-
-
 import dao.Database;
+import util.LicenseManager;
 import view.DashboardView;
+import view.ActivationView;
 
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.JOptionPane;
 
 public class Main {
     public static void main(String[] args) {
-        // 1. Inisialisasi Database (membuat tabel jika belum ada)
+        // 1. Initialize Database
         Database.init();
 
-        // 2. Set Look and Feel agar tampilan mengikuti OS (Windows/Mac/Linux)
+        // 2. Set Look and Feel
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
-            System.err.println("Gagal set Look and Feel: " + e.getMessage());
+            e.printStackTrace();
         }
 
-        // 3. Jalankan Aplikasi di Event Dispatch Thread (best practice untuk Swing)
+        // 3. Check License / Trial
         SwingUtilities.invokeLater(() -> {
-            DashboardView dashboard = new DashboardView();
-            dashboard.setVisible(true);
+            int trialDays = LicenseManager.getTrialDaysLeft();
+
+            if (trialDays == -1) {
+                // Trial Expired -> Show Activation Screen
+                new ActivationView().setVisible(true);
+            } else {
+                // Still in trial OR already activated
+                if (trialDays != 999 && trialDays <= 2) {
+                    // Show reminder if trial is running low (2 days or less)
+                    JOptionPane.showMessageDialog(null, 
+                        "PERHATIAN: Masa trial Anda tersisa " + trialDays + " hari lagi. Silakan hubungi Admin untuk aktivasi.", 
+                        "Peringatan Trial", JOptionPane.WARNING_MESSAGE);
+                }
+                new DashboardView().setVisible(true);
+            }
         });
     }
 }

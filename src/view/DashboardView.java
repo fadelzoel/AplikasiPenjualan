@@ -1,9 +1,6 @@
 package view;
 
-/**
- * @author noroi
- */
-
+import util.LicenseManager;
 import util.Theme;
 
 import javax.swing.*;
@@ -17,12 +14,31 @@ public class DashboardView extends JFrame {
 
     public DashboardView() {
         setTitle("Aplikasi Penjualan");
-        setSize(780, 560);
+        setSize(780, 600); 
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        add(Theme.header("Aplikasi Penjualan", "Pilih menu untuk memulai"), BorderLayout.NORTH);
+        int daysLeft = LicenseManager.getTrialDaysLeft();
+
+        // --- MAIN CONTAINER ---
+        JPanel container = new JPanel(new BorderLayout());
+        
+        // 1. ADD BANNER (Only once)
+        if (daysLeft != 999 && daysLeft != -1) {
+            JPanel banner = new JPanel();
+            banner.setBackground(daysLeft <= 2 ? new Color(0xEF4444) : new Color(0xF59E0B));
+            banner.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
+            JLabel lblBanner = new JLabel("Masa Trial: " + daysLeft + " hari tersisa. Hubungi Admin untuk aktivasi.");
+            lblBanner.setForeground(Color.WHITE);
+            lblBanner.setFont(new Font("Arial", Font.BOLD, 13));
+            banner.add(lblBanner);
+            container.add(banner, BorderLayout.NORTH);
+        }
+
+        // 2. ADD HEADER & BODY
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.add(Theme.header("Aplikasi Penjualan", "Pilih menu untuk memulai"), BorderLayout.NORTH);
 
         JPanel body = Theme.body(new BorderLayout(0, 16));
         JPanel grid = new JPanel(new GridLayout(2, 2, 16, 16));
@@ -44,7 +60,10 @@ public class DashboardView extends JFrame {
         footer.add(keluar);
         body.add(footer, BorderLayout.SOUTH);
 
-        add(body, BorderLayout.CENTER);
+        mainPanel.add(body, BorderLayout.CENTER);
+        container.add(mainPanel, BorderLayout.CENTER);
+        
+        add(container, BorderLayout.CENTER);
     }
 
     private JPanel menuCard(String title, String desc, Color accent, Runnable action) {

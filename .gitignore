@@ -1,0 +1,38 @@
+# ==========================================
+# NetBeans specific files
+# ==========================================
+build/
+dist/
+nbproject/private/
+nbbuild/
+nbdist/
+.nb-gradle/
+
+# ==========================================
+# Java Compiled Files
+# ==========================================
+*.class
+*.war
+*.ear
+
+# ==========================================
+# Libraries (Keep our libs folder on GitHub!)
+# ==========================================
+*.jar
+!libs/*.jar
+
+# ==========================================
+# Application Data & Databases
+# ==========================================
+database.db
+*.db
+*.sqlite
+Bon_*.pdf
+
+# ==========================================
+# LICENSE & SECURITY FILES (CRITICAL!)
+# ==========================================
+private.key
+license.dat
+trial.dat
+.bisnisfadel/
