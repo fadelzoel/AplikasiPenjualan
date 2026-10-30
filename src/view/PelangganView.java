@@ -1,17 +1,12 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package view;
 
 /**
- *
  * @author noroi
  */
 
 import controller.PelangganController;
 import model.Pelanggan;
+import util.Theme;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -19,75 +14,79 @@ import java.awt.*;
 import java.util.List;
 
 public class PelangganView extends JFrame {
+    static { Theme.install(); }
+
     private final PelangganController controller = new PelangganController(this);
-    
+
     private final DefaultTableModel model = new DefaultTableModel(
             new Object[]{"Kode", "Nama Pelanggan", "Alamat", "No. HP"}, 0) {
         @Override public boolean isCellEditable(int r, int c) { return false; }
     };
-    
+
     private final JTable table = new JTable(model);
-    private final JTextField tfNama = new JTextField(25);
-    private final JTextField tfAlamat = new JTextField(25);
-    private final JTextField tfNoHp = new JTextField(25);
-    private final JTextField tfCari = new JTextField(25);
+    private final JTextField tfNama = Theme.field(25);
+    private final JTextField tfAlamat = Theme.field(25);
+    private final JTextField tfNoHp = Theme.field(25);
+    private final JTextField tfCari = Theme.field(25);
     private String selectedKode;
 
     public PelangganView() {
         setTitle("Master Pelanggan");
-        setSize(900, 600);
+        setSize(950, 680);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
-        setLayout(new BorderLayout(5, 5));
+        setLayout(new BorderLayout());
 
-        JLabel title = new JLabel("MASTER PELANGGAN", SwingConstants.CENTER);
-        title.setFont(new Font("Arial", Font.BOLD, 22));
-        title.setBorder(BorderFactory.createEmptyBorder(15, 0, 5, 0));
-        add(title, BorderLayout.NORTH);
+        add(Theme.header("Master Pelanggan", "Kelola data pelanggan, alamat dan nomor HP"), BorderLayout.NORTH);
 
-        JPanel center = new JPanel();
-        center.setLayout(new BoxLayout(center, BoxLayout.Y_AXIS));
+        JPanel body = Theme.body(new BorderLayout(0, 16));
 
-        JPanel cari = new JPanel();
-        cari.add(new JLabel("Cari Pelanggan:"));
-        cari.add(tfCari);
-        center.add(cari);
+        // --- Form ---
+        JPanel formCard = Theme.card("Form Pelanggan", new BorderLayout(0, 10));
+        JPanel form = new JPanel(new GridBagLayout());
+        form.setOpaque(false);
+        Theme.formRow(form, 0, "Nama Pelanggan", tfNama);
+        Theme.formRow(form, 1, "Alamat", tfAlamat);
+        Theme.formRow(form, 2, "No. HP", tfNoHp);
 
-        JPanel form = new JPanel(new GridLayout(3, 2, 5, 5));
-        form.setBorder(BorderFactory.createTitledBorder("Form Pelanggan"));
-        form.add(new JLabel("Nama Pelanggan:")); form.add(tfNama);
-        form.add(new JLabel("Alamat:")); form.add(tfAlamat);
-        form.add(new JLabel("No. HP:")); form.add(tfNoHp);
-        
-        JPanel formWrap = new JPanel();
-        formWrap.add(form);
-        center.add(formWrap);
+        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        buttons.setOpaque(false);
+        JButton bSimpan = Theme.button("Simpan Pelanggan", Theme.SUCCESS);
+        JButton bEdit = Theme.button("Edit Pelanggan", Theme.PRIMARY);
+        JButton bHapus = Theme.button("Hapus Pelanggan", Theme.DANGER);
+        JButton bBersih = Theme.button("Bersihkan", Theme.SLATE);
+        buttons.add(bBersih);
+        buttons.add(bSimpan);
+        buttons.add(bEdit);
+        buttons.add(bHapus);
 
-        JPanel buttons = new JPanel();
-        JButton bSimpan = new JButton("Simpan Pelanggan");
-        JButton bEdit = new JButton("Edit Pelanggan");
-        JButton bHapus = new JButton("Hapus Pelanggan");
-        buttons.add(bSimpan); buttons.add(bEdit); buttons.add(bHapus);
-        center.add(buttons);
+        formCard.add(form, BorderLayout.CENTER);
+        formCard.add(buttons, BorderLayout.SOUTH);
+        body.add(formCard, BorderLayout.NORTH);
 
-        add(center, BorderLayout.CENTER);
+        // --- Tabel + pencarian ---
+        JPanel tableCard = Theme.card("Daftar Pelanggan", new BorderLayout(0, 10));
+        JPanel cari = new JPanel(new BorderLayout(10, 0));
+        cari.setOpaque(false);
+        cari.add(Theme.mutedLabel("Cari Pelanggan"), BorderLayout.WEST);
+        cari.add(tfCari, BorderLayout.CENTER);
+        tableCard.add(cari, BorderLayout.NORTH);
+        tableCard.add(Theme.scroll(table), BorderLayout.CENTER);
+        body.add(tableCard, BorderLayout.CENTER);
 
-        JScrollPane scroll = new JScrollPane(table);
-        scroll.setPreferredSize(new Dimension(850, 250));
-        JPanel tableWrap = new JPanel();
-        tableWrap.add(scroll);
-        add(tableWrap, BorderLayout.SOUTH);
+        add(body, BorderLayout.CENTER);
 
-        // Actions
+        // --- Actions (logika tidak berubah) ---
         tfCari.addCaretListener(e -> refresh());
-        
+
         bSimpan.addActionListener(e -> controller.simpan(
                 tfNama.getText().trim(), tfAlamat.getText().trim(), tfNoHp.getText().trim()));
-                
+
         bEdit.addActionListener(e -> controller.edit(
                 selectedKode, tfNama.getText().trim(), tfAlamat.getText().trim(), tfNoHp.getText().trim()));
-                
+
         bHapus.addActionListener(e -> controller.hapus(selectedKode, tfNama.getText()));
+        bBersih.addActionListener(e -> clearForm());
 
         table.getSelectionModel().addListSelectionListener(e -> {
             if (e.getValueIsAdjusting()) return;

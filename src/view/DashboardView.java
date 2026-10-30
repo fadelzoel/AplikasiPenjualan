@@ -1,46 +1,77 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package view;
 
 /**
- *
  * @author noroi
  */
 
+import util.Theme;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class DashboardView extends JFrame {
+    static { Theme.install(); }
+
     public DashboardView() {
         setTitle("Aplikasi Penjualan");
-        setSize(600, 500);
+        setSize(780, 560);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-        setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
+        setLayout(new BorderLayout());
 
-        JLabel title = new JLabel("APLIKASI PENJUALAN");
-        title.setFont(new Font("Arial", Font.BOLD, 24));
-        title.setAlignmentX(Component.CENTER_ALIGNMENT);
-        add(Box.createVerticalStrut(40));
-        add(title);
-        add(Box.createVerticalStrut(30));
+        add(Theme.header("Aplikasi Penjualan", "Pilih menu untuk memulai"), BorderLayout.NORTH);
 
-        add(menuButton("MASTER BARANG", () -> new BarangView().setVisible(true)));
-        add(menuButton("MASTER PELANGGAN", () -> new PelangganView().setVisible(true)));
-        add(menuButton("PENJUALAN", () -> new PenjualanView().setVisible(true)));
-        add(menuButton("RIWAYAT PENJUALAN", () -> new RiwayatView().setVisible(true))); // We will make RiwayatView next!
-        add(menuButton("KELUAR", this::dispose));
+        JPanel body = Theme.body(new BorderLayout(0, 16));
+        JPanel grid = new JPanel(new GridLayout(2, 2, 16, 16));
+        grid.setOpaque(false);
+        grid.add(menuCard("Master Barang", "Kelola data barang dan harga jual.",
+                Theme.PRIMARY, () -> new BarangView().setVisible(true)));
+        grid.add(menuCard("Master Pelanggan", "Kelola data pelanggan, alamat dan nomor HP.",
+                new Color(0x7C3AED), () -> new PelangganView().setVisible(true)));
+        grid.add(menuCard("Penjualan", "Buat transaksi baru dan simpan ke faktur.",
+                Theme.SUCCESS, () -> new PenjualanView().setVisible(true)));
+        grid.add(menuCard("Riwayat Penjualan", "Lihat detail transaksi dan cetak bon.",
+                new Color(0xF59E0B), () -> new RiwayatView().setVisible(true)));
+        body.add(grid, BorderLayout.CENTER);
+
+        JPanel footer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        footer.setOpaque(false);
+        JButton keluar = Theme.button("Keluar", Theme.DANGER);
+        keluar.addActionListener(e -> dispose());
+        footer.add(keluar);
+        body.add(footer, BorderLayout.SOUTH);
+
+        add(body, BorderLayout.CENTER);
     }
 
-    private JButton menuButton(String text, Runnable action) {
-        JButton b = new JButton(text);
-        b.setAlignmentX(Component.CENTER_ALIGNMENT);
-        b.setMaximumSize(new Dimension(300, 40));
-        b.addActionListener(e -> action.run());
-        return b;
+    private JPanel menuCard(String title, String desc, Color accent, Runnable action) {
+        JPanel card = new JPanel(new BorderLayout(0, 6));
+        Border inner = BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 6, 0, 0, accent),
+                BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Theme.BORDER), inner));
+        card.setBackground(Theme.CARD);
+        card.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        JLabel t = new JLabel(title);
+        t.setFont(Theme.BASE.deriveFont(Font.BOLD, 18f));
+        t.setForeground(Theme.TEXT);
+        JLabel d = new JLabel("<html>" + desc + "</html>");
+        d.setFont(Theme.BASE);
+        d.setForeground(Theme.MUTED);
+        d.setVerticalAlignment(SwingConstants.TOP);
+        card.add(t, BorderLayout.NORTH);
+        card.add(d, BorderLayout.CENTER);
+
+        card.addMouseListener(new MouseAdapter() {
+            @Override public void mouseEntered(MouseEvent e) { card.setBackground(Theme.HOVER); }
+            @Override public void mouseExited(MouseEvent e) { card.setBackground(Theme.CARD); }
+            @Override public void mouseClicked(MouseEvent e) { action.run(); }
+        });
+        return card;
     }
 }
